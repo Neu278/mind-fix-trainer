@@ -14,7 +14,98 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analyses: {
+        Row: {
+          created_at: string
+          id: string
+          long_report: Json
+          pattern: Database["public"]["Enums"]["mistake_pattern"]
+          problem_id: string
+          reason: string
+          short_card: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          long_report: Json
+          pattern: Database["public"]["Enums"]["mistake_pattern"]
+          problem_id: string
+          reason: string
+          short_card: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          long_report?: Json
+          pattern?: Database["public"]["Enums"]["mistake_pattern"]
+          problem_id?: string
+          reason?: string
+          short_card?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "analyses_problem_id_fkey"
+            columns: ["problem_id"]
+            isOneToOne: true
+            referencedRelation: "problems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problems: {
+        Row: {
+          choices: Json | null
+          confidence: number
+          correct_answer: string
+          created_at: string
+          explanation: string | null
+          id: string
+          image_url: string | null
+          is_correct: boolean
+          my_answer: string
+          my_solution: string | null
+          question_text: string
+          subject: string | null
+          time_spent_sec: number
+          user_id: string
+        }
+        Insert: {
+          choices?: Json | null
+          confidence: number
+          correct_answer: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          image_url?: string | null
+          is_correct: boolean
+          my_answer: string
+          my_solution?: string | null
+          question_text: string
+          subject?: string | null
+          time_spent_sec?: number
+          user_id: string
+        }
+        Update: {
+          choices?: Json | null
+          confidence?: number
+          correct_answer?: string
+          created_at?: string
+          explanation?: string | null
+          id?: string
+          image_url?: string | null
+          is_correct?: boolean
+          my_answer?: string
+          my_solution?: string | null
+          question_text?: string
+          subject?: string | null
+          time_spent_sec?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +114,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      mistake_pattern:
+        | "overconfidence"
+        | "misreading"
+        | "time_pressure"
+        | "lost_path"
+        | "calc_mistake"
+        | "no_knowledge"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +247,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      mistake_pattern: [
+        "overconfidence",
+        "misreading",
+        "time_pressure",
+        "lost_path",
+        "calc_mistake",
+        "no_knowledge",
+      ],
+    },
   },
 } as const
