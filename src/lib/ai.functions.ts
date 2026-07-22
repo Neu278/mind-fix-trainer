@@ -33,7 +33,7 @@ export const ocrImage = createServerFn({ method: "POST" })
           role: "user",
           content: [
             { type: "text", text: "이미지에서 문제 텍스트를 추출하세요. 발문과 보기(객관식일 경우)를 정확히 옮겨 적어주세요. 과목이 명확하면 subject에 (수학/영어/국어/과학/사회 등) 채우고, 아니면 null. 보기가 없으면 choices=null." },
-            { type: "image_url", image_url: { url: data.image_base64 } },
+            { type: "image", image: data.image_base64 },
           ],
         }],
       });

@@ -16,7 +16,8 @@ function ProblemsList() {
   const { data = [], isLoading } = useQuery({ queryKey: ["problems"], queryFn: () => fn() });
   const [filter, setFilter] = useState<Pattern | "all">("all");
 
-  const filtered = filter === "all" ? data : data.filter(p => p.analyses?.[0]?.pattern === filter);
+  const patternOf = (p: any) => (Array.isArray(p.analyses) ? p.analyses[0] : p.analyses)?.pattern as Pattern | undefined;
+  const filtered = filter === "all" ? data : data.filter(p => patternOf(p) === filter);
 
   return (
     <div className="space-y-4">
@@ -28,7 +29,7 @@ function ProblemsList() {
       <div className="flex flex-wrap gap-2">
         <FilterPill active={filter === "all"} onClick={() => setFilter("all")}>전체 {data.length}</FilterPill>
         {ALL_PATTERNS.map(p => {
-          const count = data.filter(d => d.analyses?.[0]?.pattern === p).length;
+          const count = data.filter(d => patternOf(d) === p).length;
           const m = PATTERN_META[p];
           return (
             <FilterPill key={p} active={filter === p} onClick={() => setFilter(p)} color={m.color}>

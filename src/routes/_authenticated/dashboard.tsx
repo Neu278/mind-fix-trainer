@@ -66,8 +66,10 @@ function Stat({ label, value, emoji, tone }: { label: string; value: number; emo
   );
 }
 
-export function ProblemCard({ p }: { p: { id: string; subject: string | null; question_text: string; confidence: number; is_correct: boolean; created_at: string; analyses?: { pattern: Pattern }[] | null } }) {
-  const pattern = p.analyses?.[0]?.pattern;
+type PCard = { id: string; subject: string | null; question_text: string; confidence: number; is_correct: boolean; created_at: string; analyses?: { pattern: Pattern } | { pattern: Pattern }[] | null };
+export function ProblemCard({ p }: { p: PCard }) {
+  const a = Array.isArray(p.analyses) ? p.analyses[0] : p.analyses;
+  const pattern = a?.pattern;
   const meta = pattern ? PATTERN_META[pattern] : null;
   return (
     <Link to="/problems/$id" params={{ id: p.id }} className="block rounded-2xl border bg-card p-4 hover:shadow-md transition">
