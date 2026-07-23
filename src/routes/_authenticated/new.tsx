@@ -68,11 +68,56 @@ function NewProblem() {
         setUseChoices(true);
         setChoices([...ocred.choices, ...Array(Math.max(0, 4 - ocred.choices.length)).fill("")]);
       }
+      if (ocred.correct_answer) setCorrect(ocred.correct_answer);
+      if (ocred.my_answer) setMine(ocred.my_answer);
+      if (ocred.my_solution) setMySolution(ocred.my_solution);
+      if (ocred.explanation) setExplanation(ocred.explanation);
       toast.success("이미지에서 문제를 읽어왔어요 ✨");
+
+      // 자동 등록: 필수 필드가 모두 추출됐으면 바로 저장 + 분석 진행
+      if (ocred.question_text && ocred.correct_answer && ocred.my_answer) {
+        toast.info("자동 등록을 시작합니다...");
+        await submitWith({
+          subject: ocred.subject ?? null,
+          question_text: ocred.question_text,
+          choices: ocred.choices && ocred.choices.length ? ocred.choices : null,
+          correct_answer: ocred.correct_answer,
+          my_answer: ocred.my_answer,
+          my_solution: ocred.my_solution ?? null,
+          explanation: ocred.explanation ?? null,
+          image_url: path,
+        });
+      }
     } catch (e: any) {
       toast.error("이미지 처리 실패: " + (e.message ?? e));
     } finally {
       setOcring(false);
+    }
+  }
+
+  async function submitWith(fields: {
+    subject: string | null;
+    question_text: string;
+    choices: string[] | null;
+    correct_answer: string;
+    my_answer: string;
+    my_solution: string | null;
+    explanation: string | null;
+    image_url: string | null;
+  }) {
+    setSaving(true);
+    try {
+      const res = await create({
+        data: { ...fields, confidence, time_spent_sec: elapsed },
+      });
+      toast.info("🧠 AI가 분석 중이에요...");
+      await analyze({ data: { problem_id: res.id } });
+      toast.success("분석 완료!");
+      router.navigate({ to: "/problems/$id", params: { id: res.id } });
+    } catch (e: any) {
+      toast.error(e.message ?? "저장 실패");
+    } finally {
+      setSaving(false);
     }
   }
 
