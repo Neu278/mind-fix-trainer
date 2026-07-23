@@ -24,6 +24,10 @@ export const ocrImage = createServerFn({ method: "POST" })
       subject: z.string().nullable(),
       question_text: z.string(),
       choices: z.array(z.string()).nullable(),
+      correct_answer: z.string().nullable(),
+      my_answer: z.string().nullable(),
+      my_solution: z.string().nullable(),
+      explanation: z.string().nullable(),
     });
     try {
       const result = await generateText({
@@ -32,7 +36,7 @@ export const ocrImage = createServerFn({ method: "POST" })
         messages: [{
           role: "user",
           content: [
-            { type: "text", text: "이미지에서 문제 텍스트를 추출하세요. 발문과 보기(객관식일 경우)를 정확히 옮겨 적어주세요. 과목이 명확하면 subject에 (수학/영어/국어/과학/사회 등) 채우고, 아니면 null. 보기가 없으면 choices=null." },
+            { type: "text", text: "이미지에서 문제 등록에 필요한 정보를 최대한 추출하세요.\n- question_text: 발문 전체를 정확히 옮겨 적기\n- choices: 객관식 보기 배열 (없으면 null)\n- subject: 과목명 (수학/영어/국어/과학/사회 등, 불명확하면 null)\n- correct_answer: 해설/정답 표시가 보이면 그 값 (예: '3', 'ㄴ,ㄷ', '42'). 없으면 null\n- my_answer: 학생이 체크/필기한 답이 보이면 그 값. 없으면 null\n- my_solution: 학생이 손으로 쓴 풀이 흔적이 보이면 간단 요약. 없으면 null\n- explanation: 해설 텍스트가 보이면 그대로. 없으면 null" },
             { type: "image", image: data.image_base64 },
           ],
         }],
@@ -40,7 +44,7 @@ export const ocrImage = createServerFn({ method: "POST" })
       return result.output;
     } catch (e) {
       if (NoObjectGeneratedError.isInstance(e)) {
-        return { subject: null, question_text: "", choices: null };
+        return { subject: null, question_text: "", choices: null, correct_answer: null, my_answer: null, my_solution: null, explanation: null };
       }
       throw e;
     }
