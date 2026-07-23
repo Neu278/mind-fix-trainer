@@ -2,14 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 import { generateText, Output, NoObjectGeneratedError } from "ai";
-import { createLovableAiGatewayProvider } from "./ai-gateway.server";
+import { getGeminiProvider } from "./ai-gateway.server";
 
-const MODEL = "google/gemini-3-flash-preview";
+const MODEL = "gemini-2.5-flash";
 
 function gateway() {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("LOVABLE_API_KEY missing");
-  return createLovableAiGatewayProvider(key);
+  return getGeminiProvider();
 }
 
 // --- OCR: read a problem image and return question / choices / correct / my_answer / my_solution guesses.

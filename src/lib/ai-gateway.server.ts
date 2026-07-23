@@ -1,12 +1,12 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-export function createLovableAiGatewayProvider(lovableApiKey: string) {
-  return createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
-    headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-    },
+export function getGeminiProvider() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("GEMINI_API_KEY가 .env 파일에 설정되어 있지 않습니다.");
+  }
+  return createGoogleGenerativeAI({
+    apiKey,
   });
 }
+
