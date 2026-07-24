@@ -16,7 +16,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedInsightsRouteImport } from './routes/_authenticated/insights'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
 import { Route as AuthenticatedProblemsRouteImport } from './routes/_authenticated/problems'
-import { Route as AuthenticatedProblemsIdRouteImport } from './routes/_authenticated/problems.$id'
+import { Route as AuthenticatedProblemsIdRouteImport } from './routes/_authenticated/problems_.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -53,9 +53,9 @@ const AuthenticatedProblemsRoute = AuthenticatedProblemsRouteImport.update({
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedProblemsIdRoute = AuthenticatedProblemsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedProblemsRoute,
+  id: '/problems_/$id',
+  path: '/problems/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -64,7 +64,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insights': typeof AuthenticatedInsightsRoute
   '/new': typeof AuthenticatedNewRoute
-  '/problems': typeof AuthenticatedProblemsRouteWithChildren
+  '/problems': typeof AuthenticatedProblemsRoute
   '/problems/$id': typeof AuthenticatedProblemsIdRoute
 }
 export interface FileRoutesByTo {
@@ -73,7 +73,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/insights': typeof AuthenticatedInsightsRoute
   '/new': typeof AuthenticatedNewRoute
-  '/problems': typeof AuthenticatedProblemsRouteWithChildren
+  '/problems': typeof AuthenticatedProblemsRoute
   '/problems/$id': typeof AuthenticatedProblemsIdRoute
 }
 export interface FileRoutesById {
@@ -84,8 +84,8 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/insights': typeof AuthenticatedInsightsRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
-  '/_authenticated/problems': typeof AuthenticatedProblemsRouteWithChildren
-  '/_authenticated/problems/$id': typeof AuthenticatedProblemsIdRoute
+  '/_authenticated/problems': typeof AuthenticatedProblemsRoute
+  '/_authenticated/problems_/$id': typeof AuthenticatedProblemsIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -115,7 +115,7 @@ export interface FileRouteTypes {
     | '/_authenticated/insights'
     | '/_authenticated/new'
     | '/_authenticated/problems'
-    | '/_authenticated/problems/$id'
+    | '/_authenticated/problems_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -175,41 +175,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProblemsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/problems/$id': {
-      id: '/_authenticated/problems/$id'
-      path: '/$id'
+    '/_authenticated/problems_/$id': {
+      id: '/_authenticated/problems_/$id'
+      path: '/problems/$id'
       fullPath: '/problems/$id'
       preLoaderRoute: typeof AuthenticatedProblemsIdRouteImport
-      parentRoute: typeof AuthenticatedProblemsRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
-
-interface AuthenticatedProblemsRouteChildren {
-  AuthenticatedProblemsIdRoute: typeof AuthenticatedProblemsIdRoute
-}
-
-const AuthenticatedProblemsRouteChildren: AuthenticatedProblemsRouteChildren = {
-  AuthenticatedProblemsIdRoute: AuthenticatedProblemsIdRoute,
-}
-
-const AuthenticatedProblemsRouteWithChildren =
-  AuthenticatedProblemsRoute._addFileChildren(
-    AuthenticatedProblemsRouteChildren,
-  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedInsightsRoute: typeof AuthenticatedInsightsRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
-  AuthenticatedProblemsRoute: typeof AuthenticatedProblemsRouteWithChildren
+  AuthenticatedProblemsRoute: typeof AuthenticatedProblemsRoute
+  AuthenticatedProblemsIdRoute: typeof AuthenticatedProblemsIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedInsightsRoute: AuthenticatedInsightsRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
-  AuthenticatedProblemsRoute: AuthenticatedProblemsRouteWithChildren,
+  AuthenticatedProblemsRoute: AuthenticatedProblemsRoute,
+  AuthenticatedProblemsIdRoute: AuthenticatedProblemsIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

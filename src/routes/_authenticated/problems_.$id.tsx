@@ -8,7 +8,7 @@ import { PATTERN_META, type Pattern } from "@/lib/patterns";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/problems/$id")({
+export const Route = createFileRoute("/_authenticated/problems_/$id")({
   head: () => ({ meta: [{ title: "오답 상세 · 또속" }, { name: "description", content: "Dual-Track 피드백" }] }),
   component: ProblemDetail,
 });
@@ -27,7 +27,7 @@ function ProblemDetail() {
     onError: (e: any) => toast.error(e.message ?? "실패"),
   });
 
-  if (isLoading || !data) return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
+  if (isLoading || !data) return <p className="text-sm text-muted-foreground p-4">불러오는 중...</p>;
   const { problem, analysis, signedImage } = data;
   const meta = analysis ? PATTERN_META[analysis.pattern as Pattern] : null;
   const short = analysis?.short_card as any;
@@ -36,7 +36,9 @@ function ProblemDetail() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Link to="/problems" className="text-sm text-muted-foreground hover:underline">← 문제 목록으로</Link>
+        <Link to="/problems" className="text-sm text-muted-foreground hover:underline flex items-center gap-1 font-medium">
+          ← 문제 목록으로
+        </Link>
         <Button size="sm" variant="ghost" onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>
           {reAnalyze.isPending ? "분석 중..." : "🔄 AI 재분석"}
         </Button>
