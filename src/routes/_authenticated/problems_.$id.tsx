@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { getProblem } from "@/lib/problems.functions";
-import { analyzeProblem } from "@/lib/ai.functions";
+import { analyzeProblem, askProblemQuestion } from "@/lib/ai.functions";
 import { PATTERN_META, type Pattern } from "@/lib/patterns";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -134,8 +134,113 @@ function ProblemDetail() {
               </div>
             </div>
           )}
+
+          {/* AI 추가 질문 챗봇 섹션 */}
+          <AIChatSection problemId={id} />
         </div>
       )}
+    </div>
+  );
+}
+
+function AIChatSection({ problemId }: { problemId: string }) {
+  const askFn = useServerFn(askProblemQuestion);
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const [input, setInput] = useState("");
+
+  const askMutation = useMutation({
+    mutationFn: (qText: string) => askFn({
+      data: {
+        problem_id: problemId,
+        user_question: qText,
+        history: messages,
+      }
+    }),
+    onSuccess: (res, qText) => {
+      setMessages(prev => [
+        ...prev,
+        { role: "user", content: qText },
+        { role: "assistant", content: res.answer }
+      ]);
+      setInput("");
+    },
+    onError: (e: any) => toast.error(e.message ?? "답변을 가져오지 못했어요."),
+  });
+
+  const handleSend = (textToSend?: string) => {
+    const q = textToSend ?? input;
+    if (!q.trim() || askMutation.isPending) return;
+    askMutation.mutate(q.trim());
+  };
+
+  const quickChips = [
+    "💡 이 문제 핵심 개념이 뭐야?",
+    "🔍 1단계 풀이 과정을 더 쉽게 풀어줘",
+    "🛡 실수하지 않는 검산 팁은?",
+    "📝 시험에 나오면 제일 먼저 할 행동은?"
+  ];
+
+  return (
+    <div className="rounded-3xl border bg-card p-5 space-y-4 shadow-sm border-primary/30">
+      <div className="flex items-center gap-2">
+        <span className="text-xl">🤖</span>
+        <div>
+          <h3 className="font-bold text-base">'또속' AI 튜터에게 1:1 질문하기</h3>
+          <p className="text-xs text-muted-foreground">풀이 과정 중 궁금한 점이나 헷갈리는 공식을 자유롭게 물어보세요!</p>
+        </div>
+      </div>
+
+      {/* 추천 질문 칩 */}
+      <div className="flex flex-wrap gap-1.5 pt-1">
+        {quickChips.map((chip, idx) => (
+          <button
+            key={idx}
+            onClick={() => handleSend(chip)}
+            disabled={askMutation.isPending}
+            className="rounded-full border border-primary/20 bg-primary/5 hover:bg-primary/15 px-3 py-1 text-xs text-primary font-medium transition cursor-pointer disabled:opacity-50"
+          >
+            {chip}
+          </button>
+        ))}
+      </div>
+
+      {/* 대화 내역 */}
+      {messages.length > 0 && (
+        <div className="space-y-3 pt-2 max-h-80 overflow-y-auto pr-1">
+          {messages.map((m, i) => (
+            <div key={i} className={`flex gap-2 text-sm ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              {m.role === "assistant" && <span className="text-lg">🤖</span>}
+              <div className={`rounded-2xl px-4 py-2.5 max-w-[85%] whitespace-pre-wrap ${
+                m.role === "user" 
+                  ? "bg-primary text-primary-foreground rounded-tr-none font-medium" 
+                  : "bg-accent/80 text-foreground rounded-tl-none border"
+              }`}>
+                {m.content}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 질문 입력창 */}
+      <div className="flex gap-2 pt-2">
+        <input
+          type="text"
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === "Enter" && handleSend()}
+          placeholder="예: 2단계에서 왜 부호가 바뀌는지 설명해줘..."
+          disabled={askMutation.isPending}
+          className="flex-1 rounded-2xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
+        />
+        <Button 
+          onClick={() => handleSend()} 
+          disabled={askMutation.isPending || !input.trim()}
+          className="rounded-2xl px-5"
+        >
+          {askMutation.isPending ? "생각 중..." : "전송 🚀"}
+        </Button>
+      </div>
     </div>
   );
 }

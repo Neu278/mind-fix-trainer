@@ -134,3 +134,50 @@ ${bodyText}`;
 
     return output;
   });
+
+// --- Q&A: Ask follow-up questions to AI tutor about the problem
+export const askProblemQuestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    problem_id: z.string().uuid(),
+    user_question: z.string().min(1),
+    history: z.array(z.object({
+      role: z.enum(["user", "assistant"]),
+      content: z.string(),
+    })).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: p, error } = await context.supabase
+      .from("problems").select("*, analyses(*)").eq("id", data.problem_id).single();
+    if (error) throw new Error(error.message);
+
+    const provider = gateway();
+    const analysis = Array.isArray(p.analyses) ? p.analyses[0] : p.analyses;
+    const long = analysis?.long_report as any;
+
+    const contextText = `[수학 문제]\n${p.question_text}\n${p.choices ? `[보기]\n${(p.choices as string[]).map((c,i)=>`${i+1}. ${c}`).join("\n")}` : ""}\n[학습자 답] ${p.my_answer}\n[정답] ${p.correct_answer}\n[학습자 풀이 과정]\n${p.my_solution ?? "(없음)"}\n[AI 정석 풀이]\n${long?.correct_solution ?? "(없음)"}\n[내 풀이의 부족점]\n${long?.flaws ?? "(없음)"}`;
+
+    const systemPrompt = `너는 학생의 수학 오답 노트를 함께 짚어주는 다정하고 실력 있는 AI 튜터 '또속'이다.
+학생이 이 오답 문제와 정석 풀이에 대해 추가 질문을 했다.
+반드시 한국어로, 10대 학생이 친근감을 느끼는 다정한 톤으로 쉽게 풀어서 설명해라.
+필요하면 단계별 예시나 간단한 수식 표기(x^2, √3 등)를 들어 쉽게 대답해라.
+
+문제 맥락:
+${contextText}`;
+
+    const messages = [
+      { role: "system" as const, content: systemPrompt },
+      ...(data.history ?? []).map(h => ({
+        role: h.role === "user" ? ("user" as const) : ("assistant" as const),
+        content: h.content,
+      })),
+      { role: "user" as const, content: data.user_question },
+    ];
+
+    const result = await generateText({
+      model: provider(MODEL),
+      messages,
+    });
+
+    return { answer: result.text };
+  });
