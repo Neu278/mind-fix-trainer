@@ -166,7 +166,6 @@ export const askProblemQuestion = createServerFn({ method: "POST" })
 ${contextText}`;
 
     const messages = [
-      { role: "system" as const, content: systemPrompt },
       ...(data.history ?? []).map(h => ({
         role: h.role === "user" ? ("user" as const) : ("assistant" as const),
         content: h.content,
@@ -176,6 +175,7 @@ ${contextText}`;
 
     const result = await generateText({
       model: provider(MODEL),
+      system: systemPrompt,
       messages,
     });
 
