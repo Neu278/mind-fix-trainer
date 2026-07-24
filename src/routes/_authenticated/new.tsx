@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { createProblem, } from "@/lib/problems.functions";
+import { createProblem } from "@/lib/problems.functions";
 import { ocrImage, analyzeProblem } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -46,14 +46,26 @@ function NewProblem() {
 
   async function uploadImageAndOcr(file: File) {
     setOcring(true);
+    let uploadedPath: string | null = null;
     try {
       const { data: u } = await supabase.auth.getUser();
-      const uid = u.user!.id;
-      const path = `${uid}/${Date.now()}_${file.name}`;
-      const { error: upErr } = await supabase.storage.from("problem-images").upload(path, file);
-      if (upErr) throw upErr;
-      setImageUrl(path);
+      if (u?.user) {
+        const uid = u.user.id;
+        const path = `${uid}/${Date.now()}_${file.name}`;
+        const { error: upErr } = await supabase.storage.from("problem-images").upload(path, file);
+        if (upErr) {
+          console.warn("[Storage Warning]", upErr.message);
+          toast.warning("이미지 파일 저장은 스킵하고 AI 읽기를 진행합니다.");
+        } else {
+          uploadedPath = path;
+          setImageUrl(uploadedPath);
+        }
+      }
+    } catch (storageErr) {
+      console.warn("[Storage Error]", storageErr);
+    }
 
+    try {
       // base64 for OCR
       const b64: string = await new Promise((res, rej) => {
         const r = new FileReader();
@@ -85,7 +97,7 @@ function NewProblem() {
           my_answer: ocred.my_answer,
           my_solution: ocred.my_solution ?? null,
           explanation: ocred.explanation ?? null,
-          image_url: path,
+          image_url: uploadedPath,
         });
       }
     } catch (e: any) {

@@ -70,10 +70,28 @@ export const getProblem = createServerFn({ method: "GET" })
       .maybeSingle();
     let signedImage: string | null = null;
     if (problem.image_url) {
-      const { data: s } = await context.supabase.storage.from("problem-images").createSignedUrl(problem.image_url, 3600);
-      signedImage = s?.signedUrl ?? null;
+      try {
+        const { data: s } = await context.supabase.storage.from("problem-images").createSignedUrl(problem.image_url, 3600);
+        signedImage = s?.signedUrl ?? null;
+      } catch (e) {
+        console.warn("[Storage] Signed URL error:", e);
+        signedImage = null;
+      }
     }
     return { problem, analysis, signedImage };
+  });
+
+export const deleteProblem = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("problems")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    return { success: true };
   });
 
 export const getInsights = createServerFn({ method: "GET" })

@@ -19,22 +19,58 @@ function AuthedShell() {
     router.navigate({ to: "/auth", replace: true });
   }
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card/60 backdrop-blur sticky top-0 z-10">
-        <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-          <Link to="/dashboard" className="text-xl font-bold text-primary">
-            또속 <span className="text-sm font-normal text-muted-foreground">Ttosok</span>
+    <div className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <header className="sticky top-0 z-50 border-b border-[#3a3a3f] bg-black/90 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl px-6 py-4 flex items-center justify-between">
+          <Link to="/dashboard" className="flex items-center gap-3 group">
+            <span className="font-display text-2xl font-bold tracking-widest uppercase text-white group-hover:opacity-80 transition-opacity">
+              TTOSOK
+            </span>
+            <span className="hidden sm:inline-block border-l border-[#3a3a3f] pl-3 font-display micro-cap text-[10px] text-neutral-400 tracking-widest">
+              MISSION TELEMETRY
+            </span>
           </Link>
-          <nav className="flex items-center gap-1 text-sm">
-            <Link to="/dashboard" className="px-3 py-2 rounded-lg hover:bg-accent" activeProps={{ className: "px-3 py-2 rounded-lg bg-accent font-semibold" }}>홈</Link>
-            <Link to="/new" className="px-3 py-2 rounded-lg hover:bg-accent" activeProps={{ className: "px-3 py-2 rounded-lg bg-accent font-semibold" }}>새 오답</Link>
-            <Link to="/problems" className="px-3 py-2 rounded-lg hover:bg-accent" activeProps={{ className: "px-3 py-2 rounded-lg bg-accent font-semibold" }}>오답노트</Link>
-            <Link to="/insights" className="px-3 py-2 rounded-lg hover:bg-accent" activeProps={{ className: "px-3 py-2 rounded-lg bg-accent font-semibold" }}>인사이트</Link>
-            <Button variant="ghost" size="sm" onClick={signOut}>로그아웃</Button>
+          <nav className="flex items-center gap-2 sm:gap-4 font-display micro-cap text-xs uppercase tracking-widest">
+            <Link
+              to="/dashboard"
+              className="px-3 py-1.5 text-neutral-400 hover:text-white transition-colors"
+              activeProps={{ className: "px-3 py-1.5 text-white font-bold border-b-2 border-white" }}
+            >
+              MISSION
+            </Link>
+            <Link
+              to="/new"
+              className="px-3 py-1.5 text-neutral-400 hover:text-white transition-colors"
+              activeProps={{ className: "px-3 py-1.5 text-white font-bold border-b-2 border-white" }}
+            >
+              LOG ENTRY
+            </Link>
+            <Link
+              to="/problems"
+              className="px-3 py-1.5 text-neutral-400 hover:text-white transition-colors"
+              activeProps={{ className: "px-3 py-1.5 text-white font-bold border-b-2 border-white" }}
+            >
+              ARCHIVE
+            </Link>
+            <Link
+              to="/insights"
+              className="px-3 py-1.5 text-neutral-400 hover:text-white transition-colors"
+              activeProps={{ className: "px-3 py-1.5 text-white font-bold border-b-2 border-white" }}
+            >
+              ANALYTICS
+            </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={signOut}
+              className="ml-2 rounded-full border-neutral-700 text-neutral-300 hover:border-white hover:text-white hover:bg-transparent"
+            >
+              LOGOUT
+            </Button>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">
+      <main className="mx-auto max-w-6xl px-6 py-10">
         <Outlet />
       </main>
     </div>

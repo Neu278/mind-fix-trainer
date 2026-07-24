@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { getProblem } from "@/lib/problems.functions";
+import { getProblem, deleteProblem } from "@/lib/problems.functions";
 import { analyzeProblem } from "@/lib/ai.functions";
 import { PATTERN_META, type Pattern } from "@/lib/patterns";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/problems/$id")({
   head: () => ({ meta: [{ title: "오답 상세 · 또속" }, { name: "description", content: "Dual-Track 피드백" }] }),
@@ -15,8 +16,10 @@ export const Route = createFileRoute("/_authenticated/problems/$id")({
 
 function ProblemDetail() {
   const { id } = Route.useParams();
+  const router = useRouter();
   const fn = useServerFn(getProblem);
   const analyze = useServerFn(analyzeProblem);
+  const remove = useServerFn(deleteProblem);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["problem", id], queryFn: () => fn({ data: { id } }) });
   const [mode, setMode] = useState<"short" | "long">("short");
@@ -26,6 +29,22 @@ function ProblemDetail() {
     onSuccess: () => { toast.success("재분석 완료!"); qc.invalidateQueries({ queryKey: ["problem", id] }); },
     onError: (e: any) => toast.error(e.message ?? "실패"),
   });
+
+  const removeMut = useMutation({
+    mutationFn: () => remove({ data: { id } }),
+    onSuccess: () => {
+      toast.success("문제가 삭제되었습니다.");
+      qc.invalidateQueries({ queryKey: ["problems"] });
+      router.navigate({ to: "/problems" });
+    },
+    onError: (e: any) => toast.error(e.message ?? "삭제 실패"),
+  });
+
+  function handleDelete() {
+    if (confirm("이 오답 문제와 분석 기록을 정말 삭제할까요?")) {
+      removeMut.mutate();
+    }
+  }
 
   if (isLoading || !data) return <p className="text-sm text-muted-foreground">불러오는 중...</p>;
   const { problem, analysis, signedImage } = data;
@@ -37,9 +56,15 @@ function ProblemDetail() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <Link to="/problems" className="text-sm text-muted-foreground">← 목록</Link>
-        <Button size="sm" variant="ghost" onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>
-          {reAnalyze.isPending ? "분석 중..." : "🔄 재분석"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="ghost" onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>
+            {reAnalyze.isPending ? "분석 중..." : "🔄 재분석"}
+          </Button>
+          <Button size="sm" variant="ghost" className="text-destructive hover:bg-destructive/10" onClick={handleDelete} disabled={removeMut.isPending}>
+            <Trash2 className="h-4 w-4 mr-1" />
+            삭제
+          </Button>
+        </div>
       </div>
 
       <div className="rounded-3xl border bg-card p-5 space-y-3">
