@@ -6,7 +6,7 @@ import { PATTERN_META, type Pattern } from "@/lib/patterns";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "홈 · 또속" }, { name: "description", content: "나의 오답과 메타인지 요약" }] }),
+  head: () => ({ meta: [{ title: "홈 · 또속" }, { name: "description", content: "나의 수학 오답과 메타인지 요약" }] }),
   component: Dashboard,
 });
 
@@ -23,8 +23,8 @@ function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="rounded-3xl bg-gradient-to-br from-accent/60 to-primary/20 p-6">
-        <div className="text-xs font-medium text-primary">👋 안녕! 오늘도 함께해요</div>
-        <h1 className="mt-1 text-2xl font-bold">오답에서 '생각의 오류'를 찾아드릴게요</h1>
+        <div className="text-xs font-medium text-primary">➗ 수학 오답 전용 트레이너</div>
+        <h1 className="mt-1 text-2xl font-bold">수학 오답에서 '생각의 오류'를 찾아드릴게요</h1>
         <div className="mt-4 flex gap-2">
           <Button asChild className="rounded-2xl"><Link to="/new">+ 새 오답 등록</Link></Button>
           <Button asChild variant="secondary" className="rounded-2xl"><Link to="/insights">📊 인사이트 보기</Link></Button>
@@ -74,7 +74,7 @@ export function ProblemCard({ p }: { p: PCard }) {
   return (
     <Link to="/problems/$id" params={{ id: p.id }} className="block rounded-2xl border bg-card p-4 hover:shadow-md transition">
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>{p.subject ?? "일반"}</span>
+        <span>{p.subject ?? "수학"}</span>
         <span>·</span>
         <span>{new Date(p.created_at).toLocaleDateString("ko-KR")}</span>
         <span className="ml-auto">{p.is_correct ? "⭕" : "❌"} ★{p.confidence}</span>
