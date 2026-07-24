@@ -10,10 +10,10 @@ export const Route = createFileRoute("/")({
   },
   head: () => ({
     meta: [
-      { title: "또속 (Ttosok) — AI 메타인지 오답 트레이너" },
-      { name: "description", content: "안다고 착각한 지점을 짚어주는 오답 노트. 문제·확신도·시간을 기록하면 AI가 왜 틀렸는지 분석해줍니다." },
-      { property: "og:title", content: "또속 — 안다고 착각한 그 지점을 짚어드려요" },
-      { property: "og:description", content: "6가지 메타인지 오답 패턴 자동 분류 · Dual-Track 맞춤 처방" },
+      { title: "또속 (Ttosok) — 수학 오답 전용 AI 메타인지 트레이너" },
+      { name: "description", content: "수학 오답만 집중적으로 분석해드려요. 문제·확신도·풀이 시간을 기록하면 AI가 왜 틀렸는지 진단합니다." },
+      { property: "og:title", content: "또속 — 수학 오답 전용 AI 트레이너" },
+      { property: "og:description", content: "수학 문제에 특화된 6가지 메타인지 오답 패턴 자동 분류 · Dual-Track 맞춤 처방" },
     ],
   }),
   component: Landing,
@@ -28,15 +28,15 @@ function Landing() {
       </header>
       <section className="mx-auto max-w-3xl px-4 pt-16 pb-24 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-accent/60 px-4 py-1.5 text-xs font-medium">
-          🧠 AI 메타인지 PT 트레이너
+          ➗ 수학 오답 전용 · AI 메타인지 트레이너
         </div>
         <h1 className="mt-6 text-5xl md:text-6xl font-bold leading-tight tracking-tight">
-          "왜 틀렸는가"를<br/>
+          수학, "왜 틀렸는가"를<br/>
           <span className="text-primary">짚어드려요.</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
-          단순 오답 저장소가 아니에요. 확신도·시간·풀이를 함께 기록하면,
-          AI가 <b>6가지 사고 오류 패턴</b>으로 분류하고 나만의 <b>행동 교정 루틴</b>을 제안해요.
+          수학 오답 전용 노트예요. 확신도·풀이시간·계산 과정을 함께 기록하면,
+          AI가 <b>수학 사고 오류 6가지 패턴</b>으로 분류하고 나만의 <b>행동 교정 루틴</b>을 제안해요.
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <Button asChild size="lg" className="rounded-2xl px-8"><Link to="/auth">지금 시작하기 →</Link></Button>
@@ -44,8 +44,8 @@ function Landing() {
 
         <div className="mt-20 grid gap-4 md:grid-cols-2 text-left">
           {[
-            { emoji: "🎯", title: "메타인지 갭 측정", desc: "확신도(★1~5)와 소요 시간으로 '안다고 착각한 지점'을 수치화" },
-            { emoji: "🧩", title: "6대 오답 패턴 자동 분류", desc: "과신·조건오독·시간압박·풀이길잃음·연산실수·지식부재" },
+            { emoji: "🎯", title: "메타인지 갭 측정", desc: "확신도(★1~5)와 풀이 시간으로 '안다고 착각한 지점'을 수치화" },
+            { emoji: "🧩", title: "수학 오답 6대 패턴", desc: "과신·조건오독·시간압박·풀이길잃음·계산실수·개념부재" },
             { emoji: "📊", title: "메타인지 다이어그램", desc: "4분면 매트릭스 · 레이더 차트 · 시간 히트맵" },
             { emoji: "⚡", title: "Dual-Track 처방", desc: "숏폼 카드로 빠르게, 장문 리포트로 깊게 — 토글 전환" },
           ].map((f) => (

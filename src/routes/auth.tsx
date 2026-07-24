@@ -9,7 +9,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  head: () => ({ meta: [{ title: "로그인 · 또속" }, { name: "description", content: "또속 계정으로 로그인하거나 회원가입하세요." }] }),
+  head: () => ({ meta: [{ title: "로그인 · 또속" }, { name: "description", content: "또속 수학 오답 트레이너에 로그인하거나 회원가입하세요." }] }),
   component: AuthPage,
 });
 
@@ -47,7 +47,7 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
           <div className="text-3xl font-bold text-primary">또속</div>
-          <p className="text-sm text-muted-foreground mt-1">AI 메타인지 오답 트레이너</p>
+          <p className="text-sm text-muted-foreground mt-1">수학 오답 전용 AI 메타인지 트레이너</p>
         </div>
         <div className="rounded-3xl border bg-card p-6 shadow-sm">
           <Tabs defaultValue="signin">
