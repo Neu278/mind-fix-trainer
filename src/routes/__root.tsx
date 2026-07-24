@@ -5,16 +5,13 @@ import {
   useRouter,
   HeadContent,
   Scripts,
-  Link,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/sonner";
-import { Button } from "@/components/ui/button";
-import { SettingsDialog } from "@/components/settings-dialog";
-import { BookMarked, Calculator, Settings } from "lucide-react";
 
 function NotFoundComponent() {
   return (
@@ -49,10 +46,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "수학 풀이 AI · 오답노트" },
-      { name: "description", content: "수학 문제 이미지를 올리면 AI가 단계별로 풀이하고, 오답노트에 저장해 복습할 수 있어요." },
-      { property: "og:title", content: "수학 풀이 AI · 오답노트" },
-      { property: "og:description", content: "이미지 한 장으로 수학 문제를 풀고 오답노트에 저장하세요." },
+      { title: "또속 (Ttosok) — 수학 오답 전용 AI 메타인지 트레이너" },
+      { name: "description", content: "수학 오답에 특화된 AI 트레이너. 왜 그렇게 생각해서 틀렸는지 진단하고 습관을 고쳐줍니다." },
+      { property: "og:title", content: "또속 (Ttosok) — 수학 오답 전용" },
+      { property: "og:description", content: "AI가 수학 오답의 '생각 오류'를 6가지 패턴으로 분류하고 맞춤 처방을 줍니다." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -83,44 +80,19 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const router = useRouter();
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      router.invalidate();
+      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+    });
+    return () => data.subscription.unsubscribe();
+  }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen">
-        <header className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-            <Link to="/" className="flex items-center gap-2 font-bold">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">π</span>
-              <span>수학 풀이 AI</span>
-            </Link>
-            <nav className="flex items-center gap-1">
-              <NavLink to="/" icon={<Calculator className="h-4 w-4" />}>풀이하기</NavLink>
-              <NavLink to="/notebook" icon={<BookMarked className="h-4 w-4" />}>오답노트</NavLink>
-              <Button size="sm" variant="ghost" onClick={() => setSettingsOpen(true)} aria-label="설정">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </nav>
-          </div>
-        </header>
-        <main className="mx-auto max-w-5xl px-4 py-6">
-          <Outlet />
-        </main>
-      </div>
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <Outlet />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
-  );
-}
-
-function NavLink({ to, icon, children }: { to: string; icon: ReactNode; children: ReactNode }) {
-  return (
-    <Link
-      to={to}
-      className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground [&.active]:bg-primary/10 [&.active]:text-primary"
-      activeProps={{ className: "active" }}
-      activeOptions={{ exact: true }}
-    >
-      {icon} {children}
-    </Link>
   );
 }

@@ -1,152 +1,62 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { toast } from "sonner";
-import { ImageUploader, type UploaderValue } from "@/components/image-uploader";
-import { SolutionView } from "@/components/solution-view";
-import { SettingsDialog } from "@/components/settings-dialog";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { solveProblem, type SolveResult } from "@/lib/gemini";
-import { addNote, getApiKey } from "@/lib/storage";
-import { BookmarkPlus, Loader2, Sparkles, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  ssr: false,
+  beforeLoad: async () => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.auth.getUser();
+    if (data.user) throw redirect({ to: "/dashboard" });
+  },
   head: () => ({
     meta: [
-      { title: "수학 풀이 AI · 이미지로 풀이받기" },
-      { name: "description", content: "수학 문제 사진을 올리면 AI가 개념·단계별 풀이·정답을 한국어로 알려줘요." },
-      { property: "og:title", content: "수학 풀이 AI" },
-      { property: "og:description", content: "이미지 한 장이면 AI가 수학 문제를 단계별로 풀어드려요." },
+      { title: "또속 (Ttosok) — 수학 오답 전용 AI 메타인지 트레이너" },
+      { name: "description", content: "수학 오답만 집중적으로 분석해드려요. 문제·확신도·풀이 시간을 기록하면 AI가 왜 틀렸는지 진단합니다." },
+      { property: "og:title", content: "또속 — 수학 오답 전용 AI 트레이너" },
+      { property: "og:description", content: "수학 문제에 특화된 6가지 메타인지 오답 패턴 자동 분류 · Dual-Track 맞춤 처방" },
     ],
   }),
-  component: HomePage,
+  component: Landing,
 });
 
-function HomePage() {
-  const [image, setImage] = useState<UploaderValue | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<SolveResult | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  async function onSolve() {
-    if (!image) {
-      toast.error("먼저 문제 이미지를 선택해 주세요.");
-      return;
-    }
-    const key = getApiKey();
-    if (!key) {
-      toast.error("Gemini API 키를 먼저 설정해 주세요.");
-      setSettingsOpen(true);
-      return;
-    }
-    setLoading(true);
-    setResult(null);
-    setSaved(false);
-    try {
-      const base64 = image.dataUrl.split(",")[1] ?? "";
-      const r = await solveProblem(key, base64, image.mimeType);
-      setResult(r);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function saveToNotebook() {
-    if (!result || !image) return;
-    addNote({
-      id: crypto.randomUUID(),
-      createdAt: Date.now(),
-      imageDataUrl: image.dataUrl,
-      result,
-      memo: "",
-      mastered: false,
-    });
-    setSaved(true);
-    toast.success("오답노트에 저장했어요.");
-  }
-
+function Landing() {
   return (
-    <div className="grid gap-6 lg:grid-cols-5">
-      <section className="lg:col-span-2 space-y-4">
-        <div className="rounded-3xl border bg-card p-5">
-          <h1 className="text-xl font-bold flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            수학 문제 이미지
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">사진을 업로드하고 문제 영역만 크롭한 뒤 AI로 풀이하세요.</p>
-          <div className="mt-4">
-            <ImageUploader value={image} onChange={(v) => { setImage(v); setResult(null); setSaved(false); }} />
-          </div>
-          <Button className="mt-4 w-full h-12 text-base" onClick={onSolve} disabled={loading || !image}>
-            {loading ? (
-              <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> AI가 풀이 중...</>
-            ) : (
-              <><Sparkles className="mr-2 h-5 w-5" /> AI로 풀이하기</>
-            )}
-          </Button>
-          {!getApiKey() && (
-            <button
-              onClick={() => setSettingsOpen(true)}
-              className="mt-3 flex w-full items-center justify-center gap-1 rounded-xl bg-accent/60 py-2 text-xs font-medium hover:bg-accent"
-            >
-              <KeyRound className="h-3.5 w-3.5" /> Gemini API 키를 먼저 등록해주세요
-            </button>
-          )}
+    <div className="min-h-screen bg-gradient-to-br from-[oklch(0.97_0.04_295)] via-background to-[oklch(0.96_0.05_165)]">
+      <header className="mx-auto max-w-5xl px-4 py-5 flex items-center justify-between">
+        <div className="text-2xl font-bold text-primary">또속</div>
+        <Button asChild variant="ghost"><Link to="/auth">로그인</Link></Button>
+      </header>
+      <section className="mx-auto max-w-3xl px-4 pt-16 pb-24 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full bg-accent/60 px-4 py-1.5 text-xs font-medium">
+          ➗ 수학 오답 전용 · AI 메타인지 트레이너
+        </div>
+        <h1 className="mt-6 text-5xl md:text-6xl font-bold leading-tight tracking-tight">
+          수학, "왜 틀렸는가"를<br/>
+          <span className="text-primary">짚어드려요.</span>
+        </h1>
+        <p className="mt-6 text-lg text-muted-foreground max-w-xl mx-auto">
+          수학 오답 전용 노트예요. 확신도·풀이시간·계산 과정을 함께 기록하면,
+          AI가 <b>수학 사고 오류 6가지 패턴</b>으로 분류하고 나만의 <b>행동 교정 루틴</b>을 제안해요.
+        </p>
+        <div className="mt-8 flex justify-center gap-3">
+          <Button asChild size="lg" className="rounded-2xl px-8"><Link to="/auth">지금 시작하기 →</Link></Button>
+        </div>
+
+        <div className="mt-20 grid gap-4 md:grid-cols-2 text-left">
+          {[
+            { emoji: "🎯", title: "메타인지 갭 측정", desc: "확신도(★1~5)와 풀이 시간으로 '안다고 착각한 지점'을 수치화" },
+            { emoji: "🧩", title: "수학 오답 6대 패턴", desc: "과신·조건오독·시간압박·풀이길잃음·계산실수·개념부재" },
+            { emoji: "📊", title: "메타인지 다이어그램", desc: "4분면 매트릭스 · 레이더 차트 · 시간 히트맵" },
+            { emoji: "⚡", title: "Dual-Track 처방", desc: "숏폼 카드로 빠르게, 장문 리포트로 깊게 — 토글 전환" },
+          ].map((f) => (
+            <div key={f.title} className="rounded-3xl bg-card border p-6 shadow-sm">
+              <div className="text-3xl">{f.emoji}</div>
+              <div className="mt-3 font-bold">{f.title}</div>
+              <div className="mt-1 text-sm text-muted-foreground">{f.desc}</div>
+            </div>
+          ))}
         </div>
       </section>
-
-      <section className="lg:col-span-3">
-        {loading && <LoadingCard />}
-        {!loading && !result && <EmptyCard />}
-        {!loading && result && (
-          <div className="space-y-4">
-            <SolutionView result={result} />
-            <Button
-              className="w-full h-12 text-base"
-              variant={saved ? "outline" : "default"}
-              onClick={saveToNotebook}
-              disabled={saved}
-            >
-              <BookmarkPlus className="mr-2 h-5 w-5" />
-              {saved ? "저장 완료" : "오답노트에 저장하기"}
-            </Button>
-          </div>
-        )}
-      </section>
-
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </div>
-  );
-}
-
-function LoadingCard() {
-  return (
-    <div className="rounded-3xl border bg-card p-10 text-center">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-      <h3 className="mt-4 font-bold">AI가 문제를 분석하고 있어요</h3>
-      <p className="mt-1 text-sm text-muted-foreground">잠시만 기다려 주세요. 보통 10초 이내에 완료돼요.</p>
-      <div className="mt-6 grid gap-2">
-        {["📖 문제 인식 중...", "💡 개념·공식 매칭...", "✍️ 단계별 풀이 작성..."].map((t, i) => (
-          <div key={i} className="rounded-full bg-accent/40 py-2 text-xs" style={{ animation: `pulse 1.5s ${i * 0.3}s infinite` }}>{t}</div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EmptyCard() {
-  return (
-    <div className="rounded-3xl border border-dashed bg-card/60 p-10 text-center text-muted-foreground">
-      <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[var(--lavender)]/40">
-        <Sparkles className="h-8 w-8 text-primary" />
-      </div>
-      <h3 className="mt-4 font-bold text-foreground">문제 이미지를 올려주세요</h3>
-      <p className="mt-1 text-sm">왼쪽에서 이미지를 선택하고 <b>AI로 풀이하기</b> 버튼을 누르면<br />여기에 단계별 풀이가 나타나요.</p>
     </div>
   );
 }
