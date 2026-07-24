@@ -115,6 +115,12 @@ function ProblemDetail() {
             <div className="rounded-3xl border bg-card p-5 space-y-5">
               <Section title="🧭 사고 궤적 추적" body={long?.trace} />
               <Section title="🎭 메타인지 착각 분석" body={long?.illusion} />
+              {long?.correct_solution && (
+                <Section title="💡 AI 추천 정석 풀이" body={long.correct_solution} highlight="mint" />
+              )}
+              {long?.flaws && (
+                <Section title="🎯 내 풀이의 허점 & 부족점 피드백" body={long.flaws} highlight="peach" />
+              )}
               <Section title="🛡 재발 방지 가이드" body={long?.prevention} />
             </div>
           )}
@@ -124,9 +130,16 @@ function ProblemDetail() {
   );
 }
 
-function Section({ title, body }: { title: string; body: string }) {
+function Section({ title, body, highlight }: { title: string; body?: string; highlight?: "mint" | "peach" }) {
+  if (!body) return null;
+  const bgStyle = highlight === "mint" 
+    ? "bg-[var(--mint)]/20 border border-[var(--mint)]/40 p-4 rounded-2xl" 
+    : highlight === "peach" 
+    ? "bg-[var(--peach)]/20 border border-[var(--peach)]/40 p-4 rounded-2xl" 
+    : "";
+
   return (
-    <div>
+    <div className={bgStyle}>
       <div className="text-sm font-bold text-primary">{title}</div>
       <p className="mt-1.5 text-sm whitespace-pre-wrap text-foreground/90">{body}</p>
     </div>

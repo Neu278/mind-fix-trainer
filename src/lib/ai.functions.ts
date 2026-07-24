@@ -69,6 +69,8 @@ export const analyzeProblem = createServerFn({ method: "POST" })
       long_report: z.object({
         trace: z.string(),
         illusion: z.string(),
+        correct_solution: z.string(),
+        flaws: z.string(),
         prevention: z.string(),
       }),
     });
@@ -95,6 +97,8 @@ export const analyzeProblem = createServerFn({ method: "POST" })
 - short_card.challenges: 2~3개, 오늘 실천할 체크박스 챌린지 문장(수학 학습 행동).
 - long_report.trace: 학생의 사고 궤적을 수식/단계 기준으로 재구성.
 - long_report.illusion: 어떤 수학 개념/조건에서 '안다고 착각'했는지 상세 분석.
+- long_report.correct_solution: AI가 추천하는 이 문제의 올바른 정석 단계별 풀이 과정(Step 1, Step 2...).
+- long_report.flaws: 학생의 풀이/생각 과정에서 결정적으로 부족했던 점, 놓친 조건, 논리적 비약이나 허점을 핀포인트로 다정하게 지적.
 - long_report.prevention: 재발 방지 가이드(2~4단계, 수학 문제 풀이 루틴).
 
 정보:
