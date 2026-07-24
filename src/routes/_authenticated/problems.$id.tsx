@@ -19,7 +19,7 @@ function ProblemDetail() {
   const analyze = useServerFn(analyzeProblem);
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["problem", id], queryFn: () => fn({ data: { id } }) });
-  const [mode, setMode] = useState<"short" | "long">("short");
+  const [mode, setMode] = useState<"long" | "short">("long");
 
   const reAnalyze = useMutation({
     mutationFn: () => analyze({ data: { problem_id: id } }),
@@ -36,63 +36,83 @@ function ProblemDetail() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <Link to="/problems" className="text-sm text-muted-foreground">← 목록</Link>
+        <Link to="/problems" className="text-sm text-muted-foreground hover:underline">← 문제 목록으로</Link>
         <Button size="sm" variant="ghost" onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>
-          {reAnalyze.isPending ? "분석 중..." : "🔄 재분석"}
+          {reAnalyze.isPending ? "분석 중..." : "🔄 AI 재분석"}
         </Button>
       </div>
 
-      <div className="rounded-3xl border bg-card p-5 space-y-3">
+      <div className="rounded-3xl border bg-card p-5 space-y-3 shadow-sm">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="font-medium">{problem.subject ?? "일반"}</span>
+          <span className="font-medium px-2 py-0.5 rounded-full bg-muted">{problem.subject ?? "수학"}</span>
           <span>·</span>
-          <span>★{problem.confidence}</span>
+          <span>확신도 ★{problem.confidence}</span>
           <span>·</span>
-          <span>⏱ {problem.time_spent_sec}s</span>
-          <span className="ml-auto">{problem.is_correct ? "⭕ 정답" : "❌ 오답"}</span>
+          <span>⏱ {problem.time_spent_sec}초</span>
+          <span className="ml-auto font-bold">{problem.is_correct ? "⭕ 정답" : "❌ 오답"}</span>
         </div>
-        {signedImage && <img src={signedImage} alt="문제 이미지" className="rounded-2xl max-h-72 object-contain" />}
-        <div className="whitespace-pre-wrap text-sm">{problem.question_text}</div>
+        {signedImage && <img src={signedImage} alt="문제 이미지" className="rounded-2xl max-h-72 object-contain border my-2" />}
+        <div className="whitespace-pre-wrap text-base font-medium">{problem.question_text}</div>
         {problem.choices && (
-          <ol className="text-sm space-y-1 list-decimal list-inside text-muted-foreground">
+          <ol className="text-sm space-y-1 list-decimal list-inside text-muted-foreground bg-accent/30 p-3 rounded-xl">
             {(problem.choices as string[]).map((c, i) => <li key={i}>{c}</li>)}
           </ol>
         )}
-        <div className="grid md:grid-cols-2 gap-2 text-sm">
-          <div className="rounded-xl bg-[var(--mint)]/30 p-3"><b>정답:</b> {problem.correct_answer}</div>
-          <div className="rounded-xl bg-[var(--peach)]/30 p-3"><b>내 답:</b> {problem.my_answer}</div>
+        <div className="grid md:grid-cols-2 gap-2 text-sm pt-2">
+          <div className="rounded-xl bg-[var(--mint)]/30 p-3 border border-[var(--mint)]/50"><b>정답:</b> {problem.correct_answer}</div>
+          <div className="rounded-xl bg-[var(--peach)]/30 p-3 border border-[var(--peach)]/50"><b>내 답:</b> {problem.my_answer}</div>
         </div>
-        {problem.my_solution && <div className="text-sm text-muted-foreground border-l-2 border-primary/40 pl-3">내 풀이: {problem.my_solution}</div>}
+        {problem.my_solution && (
+          <div className="text-sm text-muted-foreground bg-muted/40 p-3 rounded-xl border-l-4 border-primary/60">
+            <b>내 풀이 과정:</b> {problem.my_solution}
+          </div>
+        )}
       </div>
 
       {!analysis ? (
-        <div className="rounded-3xl border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground mb-3">아직 분석이 없어요.</p>
-          <Button onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>AI 분석 시작</Button>
+        <div className="rounded-3xl border border-dashed p-8 text-center bg-card">
+          <p className="text-sm text-muted-foreground mb-3">아직 AI 정석 풀이 및 메타인지 진단이 없어요.</p>
+          <Button onClick={() => reAnalyze.mutate()} disabled={reAnalyze.isPending}>AI 분석 & 정석 풀이 생성</Button>
         </div>
       ) : (
         <div className="space-y-4">
           {meta && (
-            <div className="rounded-3xl p-5" style={{ background: meta.color + "33" }}>
-              <div className="text-xs font-medium text-muted-foreground">진단된 사고 오류 패턴</div>
+            <div className="rounded-3xl p-5 border shadow-sm" style={{ background: meta.color + "33", borderColor: meta.color + "66" }}>
+              <div className="text-xs font-semibold text-muted-foreground">진단된 사고 오류 패턴</div>
               <div className="mt-1 text-2xl font-bold">{meta.emoji} {meta.label}</div>
-              <div className="mt-2 text-sm">{analysis.reason}</div>
+              <div className="mt-2 text-sm leading-relaxed">{analysis.reason}</div>
             </div>
           )}
 
           <div className="rounded-full bg-muted p-1 grid grid-cols-2 gap-1">
-            <button onClick={() => setMode("short")}
-              className={`rounded-full py-2 text-sm font-medium transition ${mode === "short" ? "bg-primary text-primary-foreground" : ""}`}>
-              ⚡ 숏폼 카드
-            </button>
             <button onClick={() => setMode("long")}
-              className={`rounded-full py-2 text-sm font-medium transition ${mode === "long" ? "bg-primary text-primary-foreground" : ""}`}>
-              🔍 장문 정밀
+              className={`rounded-full py-2.5 text-sm font-semibold transition cursor-pointer ${mode === "long" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              💡 AI 정석 풀이 & 진단
+            </button>
+            <button onClick={() => setMode("short")}
+              className={`rounded-full py-2.5 text-sm font-semibold transition cursor-pointer ${mode === "short" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}>
+              ⚡ 숏폼 루틴 & 챌린지
             </button>
           </div>
 
-          {mode === "short" ? (
-            <div className="rounded-3xl border bg-card p-5 space-y-4">
+          {mode === "long" ? (
+            <div className="rounded-3xl border bg-card p-5 space-y-5 shadow-sm">
+              <Section 
+                title="💡 AI 추천 정석 풀이" 
+                body={long?.correct_solution || problem.explanation || "이전 분석 데이터입니다. 상단의 '🔄 AI 재분석' 버튼을 누르시면 최신 AI 정석 풀이가 생성됩니다!"} 
+                highlight="mint" 
+              />
+              <Section 
+                title="🎯 내 풀이의 허점 & 부족점 피드백" 
+                body={long?.flaws || "상단의 '🔄 AI 재분석' 버튼을 누르시면 학생 풀이의 논리적 비약과 허점 피드백이 생성됩니다!"} 
+                highlight="peach" 
+              />
+              <Section title="🧭 사고 궤적 추적" body={long?.trace} />
+              <Section title="🎭 메타인지 착각 분석" body={long?.illusion} />
+              <Section title="🛡 재발 방지 가이드" body={long?.prevention} />
+            </div>
+          ) : (
+            <div className="rounded-3xl border bg-card p-5 space-y-4 shadow-sm">
               <div className="rounded-2xl bg-accent/60 p-4 text-lg font-medium">{short?.routine}</div>
               <div className="flex flex-wrap gap-2">
                 {short?.tags?.map((t: string, i: number) => (
@@ -100,28 +120,16 @@ function ProblemDetail() {
                 ))}
               </div>
               <div>
-                <div className="text-sm font-semibold mb-2">오늘의 챌린지 ✅</div>
+                <div className="text-sm font-semibold mb-2">오늘의 실천 챌린지 ✅</div>
                 <ul className="space-y-2">
                   {short?.challenges?.map((c: string, i: number) => (
-                    <li key={i} className="flex gap-2 text-sm">
-                      <input type="checkbox" className="mt-1" />
+                    <li key={i} className="flex gap-2 text-sm items-start">
+                      <input type="checkbox" className="mt-1 rounded" />
                       <span>{c}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-            </div>
-          ) : (
-            <div className="rounded-3xl border bg-card p-5 space-y-5">
-              <Section title="🧭 사고 궤적 추적" body={long?.trace} />
-              <Section title="🎭 메타인지 착각 분석" body={long?.illusion} />
-              {long?.correct_solution && (
-                <Section title="💡 AI 추천 정석 풀이" body={long.correct_solution} highlight="mint" />
-              )}
-              {long?.flaws && (
-                <Section title="🎯 내 풀이의 허점 & 부족점 피드백" body={long.flaws} highlight="peach" />
-              )}
-              <Section title="🛡 재발 방지 가이드" body={long?.prevention} />
             </div>
           )}
         </div>

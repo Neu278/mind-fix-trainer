@@ -72,19 +72,32 @@ export function ProblemCard({ p }: { p: PCard }) {
   const pattern = a?.pattern;
   const meta = pattern ? PATTERN_META[pattern] : null;
   return (
-    <Link to="/problems/$id" params={{ id: p.id }} className="block rounded-2xl border bg-card p-4 hover:shadow-md transition">
+    <Link 
+      to="/problems/$id" 
+      params={{ id: p.id }} 
+      className="group block rounded-2xl border bg-card p-4 hover:border-primary hover:shadow-md transition-all cursor-pointer relative"
+    >
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <span>{p.subject ?? "수학"}</span>
+        <span className="font-medium px-2 py-0.5 rounded-full bg-muted">{p.subject ?? "수학"}</span>
         <span>·</span>
         <span>{new Date(p.created_at).toLocaleDateString("ko-KR")}</span>
-        <span className="ml-auto">{p.is_correct ? "⭕" : "❌"} ★{p.confidence}</span>
+        <span className="ml-auto font-bold">{p.is_correct ? "⭕ 정답" : "❌ 오답"} ★{p.confidence}</span>
       </div>
-      <div className="mt-2 line-clamp-2 text-sm">{p.question_text}</div>
-      {meta && (
-        <div className="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: meta.color + "22", color: "var(--foreground)" }}>
-          <span>{meta.emoji}</span><span>{meta.label}</span>
-        </div>
-      )}
+      <div className="mt-2 line-clamp-2 text-sm font-medium group-hover:text-primary transition-colors">
+        {p.question_text}
+      </div>
+      <div className="mt-3 flex items-center justify-between">
+        {meta ? (
+          <div className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium" style={{ background: meta.color + "22", color: "var(--foreground)" }}>
+            <span>{meta.emoji}</span><span>{meta.label}</span>
+          </div>
+        ) : (
+          <span className="text-xs text-muted-foreground">분석 대기 중</span>
+        )}
+        <span className="text-xs text-primary font-semibold group-hover:translate-x-1 transition-transform">
+          풀이/진단 보기 →
+        </span>
+      </div>
     </Link>
   );
 }
