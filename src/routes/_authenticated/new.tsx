@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Star } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/new")({
-  head: () => ({ meta: [{ title: "새 오답 등록 · 또속" }, { name: "description", content: "확신도와 시간을 함께 기록하고 AI 분석을 받아보세요." }] }),
+  head: () => ({ meta: [{ title: "새 수학 오답 등록 · 또속" }, { name: "description", content: "확신도와 풀이 시간을 함께 기록하고 AI 수학 오답 분석을 받아보세요." }] }),
   component: NewProblem,
 });
 
@@ -23,7 +23,7 @@ function NewProblem() {
   const analyze = useServerFn(analyzeProblem);
   const ocr = useServerFn(ocrImage);
 
-  const [subject, setSubject] = useState("");
+  const subject = "수학";
   const [questionText, setQuestionText] = useState("");
   const [useChoices, setUseChoices] = useState(false);
   const [choices, setChoices] = useState<string[]>(["", "", "", ""]);
@@ -62,7 +62,7 @@ function NewProblem() {
         r.readAsDataURL(file);
       });
       const ocred = await ocr({ data: { image_base64: b64 } });
-      if (ocred.subject) setSubject(ocred.subject);
+      // subject는 항상 '수학' 고정
       if (ocred.question_text) setQuestionText(ocred.question_text);
       if (ocred.choices && ocred.choices.length) {
         setUseChoices(true);
@@ -78,7 +78,7 @@ function NewProblem() {
       if (ocred.question_text && ocred.correct_answer && ocred.my_answer) {
         toast.info("자동 등록을 시작합니다...");
         await submitWith({
-          subject: ocred.subject ?? null,
+          subject: "수학",
           question_text: ocred.question_text,
           choices: ocred.choices && ocred.choices.length ? ocred.choices : null,
           correct_answer: ocred.correct_answer,
@@ -127,7 +127,7 @@ function NewProblem() {
     try {
       const res = await create({
         data: {
-          subject: subject || null,
+          subject: "수학",
           question_text: questionText,
           choices: useChoices ? choices.filter(Boolean) : null,
           correct_answer: correct,
@@ -153,14 +153,13 @@ function NewProblem() {
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">새 오답 등록 ✏️</h1>
+        <h1 className="text-2xl font-bold">새 수학 오답 등록 ➗</h1>
         <div className="rounded-full bg-accent px-3 py-1 text-xs font-mono">⏱ {elapsed}s</div>
       </div>
 
       <div className="rounded-3xl border bg-card p-5 space-y-4">
-        <div>
-          <Label>과목 (선택)</Label>
-          <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="수학, 영어, 과학..." />
+        <div className="rounded-2xl bg-accent/40 px-3 py-2 text-xs text-muted-foreground">
+          ➗ 이 앱은 <b>수학 오답 전용</b>이에요. 단원/문제 유형은 문제 발문에 자연스럽게 적어주세요.
         </div>
 
         <Tabs defaultValue="text">
@@ -170,7 +169,7 @@ function NewProblem() {
           </TabsList>
           <TabsContent value="text" className="pt-3">
             <Label>문제</Label>
-            <Textarea value={questionText} onChange={e => setQuestionText(e.target.value)} rows={4} placeholder="문제를 그대로 옮겨 적어주세요." />
+            <Textarea value={questionText} onChange={e => setQuestionText(e.target.value)} rows={4} placeholder="예) 이차함수 y = x² - 4x + 3 의 최솟값을 구하시오." />
           </TabsContent>
           <TabsContent value="photo" className="pt-3 space-y-2">
             <Input type="file" accept="image/*" onChange={e => e.target.files?.[0] && uploadImageAndOcr(e.target.files[0])} disabled={ocring} />
@@ -201,8 +200,8 @@ function NewProblem() {
           <div><Label>내가 쓴 답</Label><Input value={mine} onChange={e => setMine(e.target.value)} /></div>
         </div>
 
-        <div><Label>내 풀이 과정 (있으면)</Label><Textarea value={mySolution} onChange={e => setMySolution(e.target.value)} rows={3} placeholder="어떻게 풀었는지 간단히 적으면 분석이 훨씬 정확해져요." /></div>
-        <div><Label>해설 (있으면)</Label><Textarea value={explanation} onChange={e => setExplanation(e.target.value)} rows={2} /></div>
+        <div><Label>내 풀이 과정 (있으면)</Label><Textarea value={mySolution} onChange={e => setMySolution(e.target.value)} rows={3} placeholder="식 세운 과정·계산 흐름을 간단히 적으면 분석이 훨씬 정확해져요." /></div>
+        <div><Label>해설 (있으면)</Label><Textarea value={explanation} onChange={e => setExplanation(e.target.value)} rows={2} placeholder="교재/강의 해설을 옮겨주세요." /></div>
 
         <div>
           <Label>이 문제를 풀 때 확신도는? <span className="text-primary font-bold">★{confidence}</span></Label>
